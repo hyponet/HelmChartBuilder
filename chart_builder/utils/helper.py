@@ -1,4 +1,7 @@
 import codecs
+from jsonschema import validate, ValidationError
+
+from .exceptions import DateSchemaValidationError
 
 HELM_IGNORE = """
 # Patterns to ignore when building packages.
@@ -38,3 +41,21 @@ def write_file(path, content):
 
 def get_default_helm_ignore():
     return HELM_IGNORE
+
+
+def resource_payload_validator(resource_name, schema, payload):
+    """
+    验证 request.json 中的数据是否合法
+    schema 符合： http://json-schema.org
+    :param resource_name:
+    :param schema:
+    :param payload:
+    :return:
+    """
+
+    try:
+        validate(payload, schema)
+    except ValidationError as e:
+        raise DateSchemaValidationError(resource_name, e)
+
+    return payload
