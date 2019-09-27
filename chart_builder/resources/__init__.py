@@ -43,13 +43,11 @@ class ResourceTemplate(object):
         if self.build_finish:
             return
         builder.build(payload)
+        if self.service_name:
+            builder.values = {self.service_name: builder.values}
         self._template = builder.template
         self._values = self._merge_values(builder.values)
         self.build_finish = True
-
-    @property
-    def default_labels(self):
-        return {}
 
     @property
     def template(self):
@@ -64,4 +62,5 @@ class ResourceTemplate(object):
         return self._values
 
     def _merge_values(self, values):
+        print(values)
         return {}
