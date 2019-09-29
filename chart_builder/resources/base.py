@@ -35,7 +35,32 @@ CONTAINER_SCHEMA = {
         },
         "env": {
             "type": "array",
-            "items": {"type": "object"}
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "pattern": NAME_PATTERN,
+                    },
+                    "value": {"type": "string"},
+                    "valueFrom": {
+                        "type": "object",
+                        "properties": {
+                            "configMapKeyRef": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "pattern": NAME_PATTERN,
+                                    },
+                                    "key": {"type": "string"},
+                                },
+                                "required": ["name", "key"],
+                            },
+                        }
+                    }
+                }
+            }
         },
         "ports": {
             "type": "array",
@@ -96,6 +121,26 @@ VOLUME_SCHEMA = {
             "type": "string",
             "pattern": NAME_PATTERN,
         },
+        "configMap": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "pattern": NAME_PATTERN,
+                },
+            },
+            "required": ["name"],
+        },
+        "secret": {
+            "type": "object",
+            "properties": {
+                "secretName": {
+                    "type": "string",
+                    "pattern": NAME_PATTERN,
+                },
+            },
+            "required": ["name"],
+        }
     },
     "required": ["name"],
     "additionalProperties": True,
@@ -211,6 +256,15 @@ class BaseBuilder(object):
                     if "value" in e:
                         val_envs[e['name']] = e['value']
                         e['value'] = "{{ .Value." + value_key + ".env." + e['name'] + " }}"
+                    elif "valueFrom" in e:
+                        if "configMapKeyRef" in e['valueFrom']:
+                            _name = "{{ .Release.Name }}-" + e['valueFrom']['configMapKeyRef']['name']
+                            e['valueFrom']['configMapKeyRef']['name'] = _name
+
+                        if "secretKeyRef" in e['valueFrom']:
+                            _name = "{{ .Release.Name }}-" + e['valueFrom']['secretKeyRef']['name']
+                            e['valueFrom']['secretKeyRef']['name'] = _name
+
                     env += "  - {}\n".format(json.dumps(e))
                 if val_envs:
                     values['env'] = val_envs
@@ -254,6 +308,32 @@ class BaseBuilder(object):
                 resources=resources,
             )
             self.values[name] = values
+
+        result = []
+        lines = content.split("\n")
+        for l in lines:
+            if not l:
+                # Delete empty line
+                continue
+            result.append(
+                "{}{}".format(" " * indent, l)
+            )
+
+        return "\n".join(result)
+
+    def get_volumes(self, volumes, indent):
+        content = ""
+        for v in volumes:
+            value_key = "{}.{}".format(self.values_key, v['name'])
+
+            if "configMap" in v:
+                _name = "{{ .Release.Name }}-" + v['configMap']['name']
+                v['configMap']['name'] = _name
+            if "secret" in v:
+                _name = "{{ .Release.Name }}-" + v['secret']['secretName']
+                v['secret']['secretName'] = _name
+
+            content += "  - {}\n".format(json.dumps(v))
 
         result = []
         lines = content.split("\n")

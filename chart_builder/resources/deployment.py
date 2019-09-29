@@ -127,8 +127,7 @@ class DeploymentBuilder(BaseBuilder):
         volumes = ""
         if "volumes" in self.payload:
             volumes = "      volumes:\n"
-            for v in self.payload["volumes"]:
-                volumes += "      - {}\n".format(json.dumps(v))
+            volumes += self.get_volumes(self.payload['volumes'], indent=4)
 
         dns_policy = "      dnsPolicy: ClusterFirst"
         if "dns_policy" in self.payload:

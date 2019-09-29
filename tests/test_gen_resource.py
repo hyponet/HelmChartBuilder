@@ -10,6 +10,7 @@ containers = [
         "pull_policy": "Always",
         "env": [
             {"name": "debug", "value": "1"},
+            {"name": "debug", "valueFrom": {"configMapKeyRef": {"name": "test-cm", "key": "TEST"}}},
         ],
         "ports": [
             {"containerPort": 80},
@@ -60,10 +61,13 @@ deployment = {
         "command": ["/bin/exec", "fortest"],
     }],
     "containers": containers,
-    "volumes": [{
-        "name": "config-volume",
-        "hostPath": {"path": "/etc"},
-    }]
+    "volumes": [
+        {
+            "name": "config-volume",
+            "hostPath": {"path": "/etc"},
+        },
+        {"name": "test-config-map", "configMap": {"name": "test-cm"}},
+    ]
 }
 
 kube_svc = {

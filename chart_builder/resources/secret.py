@@ -1,6 +1,6 @@
 from .base import BaseBuilder, NAME_PATTERN
 
-CONFIG_MAP_SCHEMA = {
+SECRET_SCHEMA = {
     "type": "object",
     "properties": {
         "name": {
@@ -14,26 +14,26 @@ CONFIG_MAP_SCHEMA = {
     "additionalProperties": False,
 }
 
-CONFIG_MAP_TEMPLATE = """
----
+SECRET_TEMPLATE = """
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
   name: {resource_name}
+type: Opaque
 data:
 {data}
 """
 
 
-class ConfigMapBuilder(BaseBuilder):
-    VALIDATION_SCHEMA = CONFIG_MAP_SCHEMA
-    RESOURCE_TYPE = "ConfigMap"
+class SecretBuilder(BaseBuilder):
+    VALIDATION_SCHEMA = SECRET_SCHEMA
+    RESOURCE_TYPE = "Secret"
 
     def get_resource_name(self):
         return "{{ .Release.Name }}-" + self.resource_name
 
     def _do_build(self):
-        self.template = CONFIG_MAP_TEMPLATE.format(
+        self.template = SECRET_TEMPLATE.format(
             resource_name=self.get_resource_name(),
             data=self.get_data(),
         )
