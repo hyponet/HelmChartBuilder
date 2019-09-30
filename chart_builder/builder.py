@@ -28,6 +28,7 @@ class Builder(object):
 
         self._templates = {
             "configmaps": [],
+            "secrets": [],
         }
         self._values = {}
         self._services = {}
@@ -38,28 +39,41 @@ class Builder(object):
         if service_name not in self._services:
             self._create_service(service_name)
         generator = ResourceTemplate(
-            self.chart_metadata, service_name=service_name, **self._services[service_name])
+            self.chart_metadata,
+            service_name=service_name,
+            values=self._values[service_name],
+            **self._services[service_name])
         generator.gen_deployment(deployment)
 
-        self._services[service_name]["deployments"].append(generator.get_template())
-        self._services[service_name]["values"] = generator.update_values()
+        self._services[service_name]["deployments"].append(generator.template)
+        self._values[service_name] = generator.values
 
     def add_kube_service(self, service_name, kube_service):
         if service_name not in self._services:
             self._create_service(service_name)
         generator = ResourceTemplate(
-            self.chart_metadata, service_name=service_name, **self._services[service_name])
+            self.chart_metadata,
+            service_name=service_name,
+            values=self._values[service_name],
+            **self._services[service_name])
         generator.gen_kube_service(kube_service)
 
-        self._services[service_name]["services"].append(generator.get_template())
-        self._services[service_name]["values"] = generator.update_values()
+        self._services[service_name]["services"].append(generator.template)
+        self._values[service_name] = generator.values
 
     def add_configmap(self, configmap):
         generator = ResourceTemplate(self.chart_metadata, values=self._values, **self._templates)
         generator.gen_configmap(configmap)
 
-        self._templates["configmaps"].append(generator.get_template())
-        self._values = generator.update_values()
+        self._templates["configmaps"].append(generator.template)
+        self._values = generator.values
+
+    def add_secret(self, secret):
+        generator = ResourceTemplate(self.chart_metadata, values=self._values, **self._templates)
+        generator.gen_configmap(secret)
+
+        self._templates["secrets"].append(generator.template)
+        self._values = generator.values
 
     def set_dependencies(self, dependencies):
         self.dependencies = dependencies
@@ -72,14 +86,26 @@ class Builder(object):
 
         self._services[service_name]['deployments'] = defaultdict(list)
         self._services[service_name]['services'] = defaultdict(list)
-        self._services[service_name]['configmap'] = defaultdict(list)
-        self._services[service_name]['values'] = {}
 
     def _update_template(self):
-        pass
+        for svc_name, rsc in self._services.items():
+            file_name = "templates/{}_{}.yaml"
+
+            for rsc_type in ['deployments', 'services']:
+                self.storage.write(
+                    file_name.format(svc_name, rsc_type),
+                    yaml.dump_all(rsc[rsc_type]),
+                )
+
+        file_name = "templates/{}.yaml"
+        for rsc_type in ['configmaps', 'secrets']:
+            self.storage.write(
+                file_name.format(rsc_type),
+                yaml.dump_all(self._templates[rsc_type]),
+            )
 
     def _update_value(self):
-        pass
+        return self.storage.write("values.yaml", yaml.dump(self._values))
 
     def _update_metadata(self):
         metadata = self.chart_metadata

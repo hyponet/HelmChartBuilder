@@ -1,9 +1,13 @@
 import copy
+import logging
 
 from chart_builder.utils.exceptions import TemplateGenError
 from .deployment import DeploymentBuilder
 from .service import ServiceBuilder
 from .configmap import ConfigMapBuilder
+from .secret import SecretBuilder
+
+LOG = logging.getLogger(__name__)
 
 
 class ResourceTemplate(object):
@@ -39,12 +43,14 @@ class ResourceTemplate(object):
         builder = ConfigMapBuilder(self)
         self._gen(builder, cm_payload)
 
+    def gen_secret(self, cm_payload):
+        builder = SecretBuilder(self)
+        self._gen(builder, cm_payload)
+
     def _gen(self, builder, payload):
         if self.build_finish:
             return
         builder.build(payload)
-        if self.service_name:
-            builder.values = {self.service_name: builder.values}
         self._template = builder.template
         self._values = self._merge_values(builder.values)
         self.build_finish = True
@@ -62,5 +68,8 @@ class ResourceTemplate(object):
         return self._values
 
     def _merge_values(self, values):
-        print(values)
-        return {}
+        overwrite = set(values.keys()) & set(self._values.keys())
+        if overwrite:
+            LOG.warning("Service {} has overwrite: {}".format(self.service_name, overwrite))
+        self._values.update(values)
+        return self._values
