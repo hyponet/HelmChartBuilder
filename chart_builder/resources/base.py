@@ -235,9 +235,9 @@ class BaseBuilder(object):
 
             image = c['image']
             values["imageVersion"] = c.get('version') or default_tag
-            tag = '{{ .Value.' + value_key + '.imageVersion }}'
+            tag = '{{ .Values.' + value_key + '.imageVersion }}'
 
-            pull_policy = "{{ .Value." + value_key + ".imagePullPolicy }}"
+            pull_policy = "{{ .Values." + value_key + ".imagePullPolicy }}"
             values["imagePullPolicy"] = c.get("pull_policy") or "IfNotPresent"
 
             command = ""
@@ -255,7 +255,7 @@ class BaseBuilder(object):
                 for e in c['env']:
                     if "value" in e:
                         val_envs[e['name']] = e['value']
-                        e['value'] = "{{ .Value." + value_key + ".env." + e['name'] + " }}"
+                        e['value'] = "{{ .Values." + value_key + ".env." + e['name'] + " }}"
                     elif "valueFrom" in e:
                         if "configMapKeyRef" in e['valueFrom']:
                             _name = "{{ .Release.Name }}-" + e['valueFrom']['configMapKeyRef']['name']

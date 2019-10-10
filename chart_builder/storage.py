@@ -38,6 +38,9 @@ class LocalDir(object):
             return
         os.mkdir(dir_path)
 
+    def push(self):
+        LOG.warning("Do push chart to nowhere")
+
 
 class _TmpDir(LocalDir):
     def __init__(self):
@@ -69,14 +72,18 @@ class GitRepo(_TmpDir):
         LOG.info("Git clone repo {} to {}".format(
             self.repo_url, self._tmp_dir))
 
-    def commit(self):
+    def git_commit(self):
         self.git_repo.git.add(u=True)
         self.git_repo.index.commit('Update Helm Chart by ChartBuilder.')
 
-    def push(self):
+    def git_push(self):
         remote = self.git_repo.remote()
         remote.pull()
         remote.push()
+
+    def push(self):
+        self.git_commit()
+        self.git_push()
 
 
 class ChartRepo(_TmpDir):

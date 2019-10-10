@@ -81,7 +81,7 @@ class ServiceBuilder(BaseBuilder):
 
     def get_svc_type(self):
         self.values['serviceType'] = self.payload['type']
-        return '{{ .Value.' + self.values_key + '.serviceType }}'
+        return '{{ .Values.' + self.values_key + '.serviceType }}'
 
     def get_ports(self):
         content = ""

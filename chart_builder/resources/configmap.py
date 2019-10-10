@@ -45,5 +45,5 @@ class ConfigMapBuilder(BaseBuilder):
         for k, v in data.items():
             self.values[k] = v
             content += "  {}: {}\n".format(
-                k, "{{ " + ".Value.{}.{}".format(self.values_key, k) + " }}")
+                k, "{{ " + ".Values.{}.{}".format(self.values_key, k) + " }}")
         return content

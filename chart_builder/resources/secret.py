@@ -15,6 +15,7 @@ SECRET_SCHEMA = {
 }
 
 SECRET_TEMPLATE = """
+---
 apiVersion: v1
 kind: Secret
 metadata:
@@ -45,5 +46,5 @@ class SecretBuilder(BaseBuilder):
         for k, v in data.items():
             self.values[k] = v
             content += "  {}: {}\n".format(
-                k, "{{ " + ".Value.{}.{}".format(self.values_key, k) + " }}")
+                k, "{{ " + ".Values.{}.{}".format(self.values_key, k) + " }}")
         return content

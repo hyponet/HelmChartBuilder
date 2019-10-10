@@ -133,6 +133,9 @@ class Builder(object):
     def _get_values(self):
         return self.storage.read("values.yaml")
 
+    def push(self):
+        self.storage.work_dir.push()
+
     def build_chart(self):
         self._update_value()
         self._update_template()

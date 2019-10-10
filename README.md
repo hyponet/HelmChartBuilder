@@ -1,5 +1,16 @@
 # HelmChartBuilder
 
+A tool set for quickly building helm charts.
+
+## Usage
+
+```python
+from chart_builder import Builder
+
+storage = {"type": "local", "source": {"path": "/workdir"}}
+builder = Builder("newChart", version="1.0", app_version="1.0", description="chart demo", storage=storage)
+```
+
 ## Helm gRPC
 
 ```bash
