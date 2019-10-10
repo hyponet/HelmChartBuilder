@@ -5,6 +5,8 @@ from collections import defaultdict
 from hapi.chart.metadata_pb2 import Metadata
 from hapi.chart.chart_pb2 import Chart
 from chart_builder.storage import Storage
+from hapi.chart.config_pb2 import Config
+from hapi.chart.template_pb2 import Template
 from chart_builder.resources import ResourceTemplate
 
 LOG = logging.getLogger(__name__)
@@ -17,14 +19,13 @@ class Builder(object):
         self.app_version = app_version
         self.description = description
         self.dependencies = []
+        self.template_files = []
         self.non_template_files = []
 
         self.storage = Storage(
             storage_type=storage['type'],
             source=storage['source'],
         )
-        self.storage.init_workdir()
-        self._update_metadata()
 
         self._templates = {
             "configmaps": [],
@@ -34,6 +35,9 @@ class Builder(object):
         self._services = {}
         self.chart_metadata = self._get_metadata()
         self._chart = None
+
+        self.storage.init_workdir()
+        self._update_metadata()
 
     def add_deployment(self, service_name, deployment):
         if service_name not in self._services:
@@ -92,16 +96,18 @@ class Builder(object):
             file_name = "templates/{}_{}.yaml"
 
             for rsc_type in ['deployments', 'services']:
+                self.template_files.append(file_name.format(svc_name, rsc_type))
                 self.storage.write(
                     file_name.format(svc_name, rsc_type),
-                    yaml.dump_all(rsc[rsc_type]),
+                    "\n".join(rsc[rsc_type]),
                 )
 
         file_name = "templates/{}.yaml"
         for rsc_type in ['configmaps', 'secrets']:
+            self.template_files.append(file_name.format(rsc_type))
             self.storage.write(
                 file_name.format(rsc_type),
-                yaml.dump_all(self._templates[rsc_type]),
+                "\n".join(self._templates[rsc_type]),
             )
 
     def _update_value(self):
@@ -128,10 +134,16 @@ class Builder(object):
         )
 
     def _get_templates(self):
-        return []
+        templates = []
+        for t_name in self.template_files:
+            templates.append(Template(
+                name=t_name,
+                data=self.storage.read(t_name).encode()
+            ))
+        return templates
 
     def _get_values(self):
-        return self.storage.read("values.yaml")
+        return Config(raw=self.storage.read("values.yaml"))
 
     def push(self):
         self.storage.work_dir.push()
