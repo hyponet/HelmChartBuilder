@@ -149,13 +149,13 @@ spec:
       - {"name": "test-config-map", "configMap": {"name": "{{ .Release.Name }}-test-cm"}}
       dnsPolicy: ClusterFirst
 """
-deployment_values = {'test-nginx': {'labels': {}, 'test-web.test-nginx.init': {'imageVersion': 'latest',
-                                                                               'imagePullPolicy': 'IfNotPresent'},
+deployment_values = {'test-nginx': {'labels': {}, 'init': {'imageVersion': 'latest',
+                                                           'imagePullPolicy': 'IfNotPresent'},
                                     'replicaCount': 1, 'strategy': 'RollingUpdate',
-                                    'test-web.test-nginx.nginx': {'imageVersion': '1.0.0', 'imagePullPolicy': 'Always',
-                                                                  'env': {'debug': '1'}},
-                                    'test-web.test-nginx.sidecar': {'imageVersion': 'v1',
-                                                                    'imagePullPolicy': 'IfNotPresent'}}}
+                                    'nginx': {'imageVersion': '1.0.0', 'imagePullPolicy': 'Always',
+                                              'env': {'debug': '1'}},
+                                    'sidecar': {'imageVersion': 'v1',
+                                                'imagePullPolicy': 'IfNotPresent'}}}
 
 kube_svc = {
     "name": "try-nginx",

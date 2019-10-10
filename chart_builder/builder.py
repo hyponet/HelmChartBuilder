@@ -1,6 +1,5 @@
 import yaml
 import logging
-from collections import defaultdict
 
 from hapi.chart.metadata_pb2 import Metadata
 from hapi.chart.chart_pb2 import Chart
@@ -36,15 +35,13 @@ class Builder(object):
         self.chart_metadata = self._get_metadata()
         self._chart = None
 
-        self.storage.init_workdir()
-        self._update_metadata()
+        self.storage.init_workdir(chart_name)
 
     def add_deployment(self, service_name, deployment):
         if service_name not in self._services:
             self._create_service(service_name)
         generator = ResourceTemplate(
             self.chart_metadata,
-            service_name=service_name,
             values=self._values[service_name],
             **self._services[service_name])
         generator.gen_deployment(deployment)
@@ -57,7 +54,6 @@ class Builder(object):
             self._create_service(service_name)
         generator = ResourceTemplate(
             self.chart_metadata,
-            service_name=service_name,
             values=self._values[service_name],
             **self._services[service_name])
         generator.gen_kube_service(kube_service)
@@ -88,30 +84,34 @@ class Builder(object):
             "labels": {},
         }
 
-        self._services[service_name]['deployments'] = defaultdict(list)
-        self._services[service_name]['services'] = defaultdict(list)
+        self._services[service_name]['deployments'] = []
+        self._services[service_name]['services'] = []
+        self._values[service_name] = {}
 
     def _update_template(self):
         for svc_name, rsc in self._services.items():
             file_name = "templates/{}_{}.yaml"
 
             for rsc_type in ['deployments', 'services']:
-                self.template_files.append(file_name.format(svc_name, rsc_type))
+                _fn = file_name.format(svc_name, rsc_type)
+                self.template_files.append(_fn)
                 self.storage.write(
-                    file_name.format(svc_name, rsc_type),
+                    "{}/{}".format(self.chart_name, _fn),
                     "\n".join(rsc[rsc_type]),
                 )
 
         file_name = "templates/{}.yaml"
         for rsc_type in ['configmaps', 'secrets']:
-            self.template_files.append(file_name.format(rsc_type))
+            _fn = file_name.format(rsc_type)
+            self.template_files.append(_fn)
             self.storage.write(
-                file_name.format(rsc_type),
+                "{}/{}".format(self.chart_name, _fn),
                 "\n".join(self._templates[rsc_type]),
             )
 
     def _update_value(self):
-        return self.storage.write("values.yaml", yaml.dump(self._values))
+        return self.storage.write(
+            "{}/values.yaml".format(self.chart_name), yaml.dump(self._values))
 
     def _update_metadata(self):
         metadata = self.chart_metadata
@@ -122,7 +122,7 @@ class Builder(object):
             "appVersion": metadata.appVersion,
             "description": metadata.description,
         }
-        self.storage.write("Chart.yaml", yaml.dump(chart_yaml))
+        self.storage.write("{}/Chart.yaml".format(self.chart_name), yaml.dump(chart_yaml))
 
     def _get_metadata(self):
         return Metadata(
@@ -138,7 +138,7 @@ class Builder(object):
         for t_name in self.template_files:
             templates.append(Template(
                 name=t_name,
-                data=self.storage.read(t_name).encode()
+                data=self.storage.read("{}/{}".format(self.chart_name, t_name))
             ))
         return templates
 
@@ -149,6 +149,7 @@ class Builder(object):
         self.storage.work_dir.push()
 
     def build_chart(self):
+        self._update_metadata()
         self._update_value()
         self._update_template()
 

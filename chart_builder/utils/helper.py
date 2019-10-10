@@ -35,7 +35,7 @@ def read_file(path):
 
 
 def write_file(path, content):
-    with codecs.open(path, mode='w', encoding='utf-8', errors='ignore') as fd:
+    with codecs.open(path, mode='w+', encoding='utf-8', errors='ignore') as fd:
         fd.write(content)
 
 

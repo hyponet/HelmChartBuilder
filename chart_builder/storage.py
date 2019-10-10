@@ -150,12 +150,13 @@ class Storage(object):
     def write(self, file_name, content):
         self.work_dir.write(file_name, content)
 
-    def init_workdir(self):
-        self.work_dir.mkdir("charts")
-        self.work_dir.mkdir("templates")
+    def init_workdir(self, chart_name):
+        self.work_dir.mkdir(chart_name)
+        self.work_dir.mkdir(chart_name + "/charts")
+        self.work_dir.mkdir(chart_name + "/templates")
 
-        self.work_dir.touch(".helmignore")
-        self.work_dir.touch("Chart.yaml")
-        self.work_dir.touch("values.yaml")
-        self.work_dir.touch("README.md")
-        self.work_dir.touch("templates/NOTES.txt")
+        self.work_dir.touch(chart_name + "/.helmignore")
+        self.work_dir.touch(chart_name + "/Chart.yaml")
+        self.work_dir.touch(chart_name + "/values.yaml")
+        self.work_dir.touch(chart_name + "/README.md")
+        self.work_dir.touch(chart_name + "/templates/NOTES.txt")

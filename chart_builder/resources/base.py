@@ -307,7 +307,7 @@ class BaseBuilder(object):
                 liveness_probe=liveness_probe,
                 resources=resources,
             )
-            self.values[value_key] = values
+            self.values[name] = values
 
         result = []
         lines = content.split("\n")

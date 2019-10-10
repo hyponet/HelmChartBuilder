@@ -18,7 +18,9 @@ class ResourceTemplate(object):
                  deployments=None,
                  services=None,
                  configmaps=None,
-                 values=None):
+                 secrets=None,
+                 values=None,
+                 labels=None):
 
         self.chart_metadata = chart_metadata
         self.service_name = service_name or ""
@@ -26,6 +28,8 @@ class ResourceTemplate(object):
         self._deployments = copy.deepcopy(deployments or {})
         self._services = copy.deepcopy(services or {})
         self._configmaps = copy.deepcopy(configmaps or {})
+        self._secrets = copy.deepcopy(secrets or {})
+        self._labels = labels
 
         self.build_finish = False
         self._values = copy.deepcopy(values or {})
