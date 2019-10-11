@@ -78,7 +78,8 @@ spec:
     matchLabels:
 {selector}
   replicas: {replicas}
-  strategy: {strategy}
+  strategy: 
+    type: {strategy}
   template:
     metadata:
       labels:
@@ -188,7 +189,7 @@ class DeploymentBuilder(BaseBuilder):
 
         content = ""
         for k, v in selector.items():
-            content += "      {}: {}\n".format(k, v)
+            content += '      {}: "{}"\n'.format(k, v)
         return content
 
     def get_scheduling_config(self):

@@ -44,7 +44,7 @@ class SecretBuilder(BaseBuilder):
 
         content = ""
         for k, v in data.items():
-            self.values[k] = v
+            self.values[k.replace("-", "_")] = v
             content += "  {}: {}\n".format(
-                k, "{{ " + ".Values.{}.{}".format(self.values_key, k) + " }}")
+                k, "{{ " + ".Values.{}.{}".format(self.values_key, k).replace("-", "_") + " }}")
         return content

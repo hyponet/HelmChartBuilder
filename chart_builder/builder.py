@@ -143,7 +143,7 @@ class Builder(object):
         return templates
 
     def _get_values(self):
-        return Config(raw=self.storage.read("values.yaml"))
+        return Config(raw=self.storage.read("{}/values.yaml".format(self.chart_name)))
 
     def push(self):
         self.storage.work_dir.push()

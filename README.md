@@ -9,7 +9,7 @@ Init chart builder with chart metadata
 ```python
 from chart_builder import Builder
 
-storage = {"type": "local", "source": {"path": "/workdir"}}
+storage = {"type": "local", "source": {"path": "/Users/hypo-mbp"}}
 builder = Builder("newChart", version="1.0", app_version="1.0", description="chart demo", storage=storage)
 ```
 
@@ -49,6 +49,12 @@ kube_svc = {
 
 builder.add_kube_service("web", kube_svc)
 ````
+
+Build chart
+
+```python
+builder.build_chart()
+```
 
 ## Helm gRPC
 

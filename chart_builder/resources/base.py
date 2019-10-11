@@ -231,7 +231,7 @@ class BaseBuilder(object):
             name = c['name']
 
             values = {}
-            value_key = "{}.{}".format(self.values_key, name)
+            value_key = "{}.{}".format(self.values_key, name).replace("-", "_")
 
             image = c['image']
             values["imageVersion"] = c.get('version') or default_tag
@@ -307,7 +307,7 @@ class BaseBuilder(object):
                 liveness_probe=liveness_probe,
                 resources=resources,
             )
-            self.values[name] = values
+            self.values[name.replace("-", "_")] = values
 
         result = []
         lines = content.split("\n")
@@ -364,7 +364,8 @@ class BaseBuilder(object):
         else:
             self.values_key = self.resource_name
 
+        self.values_key = self.values_key.replace("-", "_")
         self._before_build()
         self._do_build()
         self._after_build()
-        self.values = {self.resource_name: self.values}
+        self.values = {self.resource_name.replace("-", "_"): self.values}

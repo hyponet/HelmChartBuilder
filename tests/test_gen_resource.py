@@ -88,13 +88,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: test-chart
-      app.kubernetes.io/instance: {{ .Release.Name }}-test-web
-      app.kubernetes.io/component: test-nginx
-      app.kubernetes.io/version: 1.0.0
+      app.kubernetes.io/name: "test-chart"
+      app.kubernetes.io/instance: "{{ .Release.Name }}-test-web"
+      app.kubernetes.io/component: "test-nginx"
+      app.kubernetes.io/version: "1.0.0"
 
-  replicas: {{ .Values.test-web.test-nginx.replicaCount }}
-  strategy: {{ .Values.test-web.test-nginx.strategy }}
+  replicas: {{ .Values.test_web.test_nginx.replicaCount }}
+  strategy: {{ .Values.test_web.test_nginx.strategy }}
   template:
     metadata:
       labels:
@@ -109,8 +109,8 @@ spec:
     spec:
       initContainers:
       - name: init
-        image: "busybox:{{ .Values.test-web.test-nginx.init.imageVersion }}"
-        imagePullPolicy: {{ .Values.test-web.test-nginx.init.imagePullPolicy }}
+        image: "busybox:{{ .Values.test_web.test_nginx.init.imageVersion }}"
+        imagePullPolicy: {{ .Values.test_web.test_nginx.init.imagePullPolicy }}
         ports:
          - name: http
            containerPort: 80
@@ -118,14 +118,14 @@ spec:
         command: ["/bin/exec", "fortest"]
       containers:
       - name: nginx
-        image: "nginx:{{ .Values.test-web.test-nginx.nginx.imageVersion }}"
-        imagePullPolicy: {{ .Values.test-web.test-nginx.nginx.imagePullPolicy }}
+        image: "nginx:{{ .Values.test_web.test_nginx.nginx.imageVersion }}"
+        imagePullPolicy: {{ .Values.test_web.test_nginx.nginx.imagePullPolicy }}
         ports:
          - name: http
            containerPort: 80
            protocol: TCP
         env:
-        - {"name": "debug", "value": "{{ .Values.test-web.test-nginx.nginx.env.debug }}"}
+        - {"name": "debug", "value": "{{ .Values.test_web.test_nginx.nginx.env.debug }}"}
         - {"name": "debug", "valueFrom": {"configMapKeyRef": {"name": "{{ .Release.Name }}-test-cm", "key": "TEST"}}}
         ports:
         - {"containerPort": 80}
@@ -135,8 +135,8 @@ spec:
         readinessProbe: {"initialDelaySeconds": 5, "periodSeconds": 5, "httpGet": {"path": "http://127.0.0.1", "port": 80}}
         resources: {"limits": {"cpu": "0.2", "memory": "0.5Gi"}}
       - name: sidecar
-        image: "sidecar:{{ .Values.test-web.test-nginx.sidecar.imageVersion }}"
-        imagePullPolicy: {{ .Values.test-web.test-nginx.sidecar.imagePullPolicy }}
+        image: "sidecar:{{ .Values.test_web.test_nginx.sidecar.imageVersion }}"
+        imagePullPolicy: {{ .Values.test_web.test_nginx.sidecar.imagePullPolicy }}
         ports:
          - name: http
            containerPort: 80
@@ -149,7 +149,7 @@ spec:
       - {"name": "test-config-map", "configMap": {"name": "{{ .Release.Name }}-test-cm"}}
       dnsPolicy: ClusterFirst
 """
-deployment_values = {'test-nginx': {'labels': {}, 'init': {'imageVersion': 'latest',
+deployment_values = {'test_nginx': {'labels': {}, 'init': {'imageVersion': 'latest',
                                                            'imagePullPolicy': 'IfNotPresent'},
                                     'replicaCount': 1, 'strategy': 'RollingUpdate',
                                     'nginx': {'imageVersion': '1.0.0', 'imagePullPolicy': 'Always',
@@ -176,7 +176,7 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-try-nginx
 spec:
-  type: {{ .Values.test-web.try-nginx.serviceType }}
+  type: {{ .Values.test_web.try_nginx.serviceType }}
   selector:
     app.kubernetes.io/name: "test-chart"
     app.kubernetes.io/instance: "{{ .Release.Name }}-test-web"
@@ -189,7 +189,7 @@ spec:
   - {"name": "https", "protocol": "TCP", "port": 443, "targetPort": 30443}
 """
 
-kube_svc_values = {'try-nginx': {'serviceType': 'ClusterIP'}}
+kube_svc_values = {'try_nginx': {'serviceType': 'ClusterIP'}}
 
 config_map = {
     "name": "test-cm",
@@ -206,10 +206,10 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-test-cm
 data:
-  key1: {{ .Values.test-web.test-cm.key1 }}
-  key2: {{ .Values.test-web.test-cm.key2 }}
+  key1: {{ .Values.test_web.test_cm.key1 }}
+  key2: {{ .Values.test_web.test_cm.key2 }}
 """
-config_map_values = {'test-cm': {'key1': 'value1', 'key2': 'value2'}}
+config_map_values = {'test_cm': {'key1': 'value1', 'key2': 'value2'}}
 
 secret = {
     "name": "test-secret",
@@ -226,10 +226,10 @@ metadata:
   name: {{ .Release.Name }}-test-secret
 type: Opaque
 data:
-  key1: {{ .Values.test-web.test-secret.key1 }}
-  key2: {{ .Values.test-web.test-secret.key2 }}
+  key1: {{ .Values.test_web.test_secret.key1 }}
+  key2: {{ .Values.test_web.test_secret.key2 }}
 """
-secret_values = {'test-secret': {'key1': 'value1', 'key2': 'value2'}}
+secret_values = {'test_secret': {'key1': 'value1', 'key2': 'value2'}}
 
 
 class TestRenderTemplate(TestCase):
