@@ -1,0 +1,11 @@
+attrs==19.1.0
+gitdb2==2.0.5
+GitPython==3.0.2
+grpcio==1.23.0
+grpcio-tools==1.23.0
+jsonschema==3.0.2
+protobuf==3.9.2
+pyrsistent==0.15.4
+PyYAML==5.1.2
+six==1.12.0
+smmap2==2.0.5
