@@ -6,6 +6,6 @@ grpcio-tools==1.23.0
 jsonschema==3.0.2
 protobuf==3.9.2
 pyrsistent==0.15.4
-PyYAML==5.1.2
+PyYAML==5.4
 six==1.12.0
 smmap2==2.0.5
